@@ -1837,7 +1837,7 @@ def remove_bad_points(info):
             # The last of these comments gives the number of lines to be skipped in the files
             if info.markovian and not info.update:
                 with open(chain_file, 'r') as f:
-                    for line in py_ifilter(iscomment,f):
+                    for line in py_filter(iscomment,f):
                         if info.only_markovian or ('update proposal' in line):
                             start = int(line.split()[2])
                         else:
@@ -1855,12 +1855,12 @@ def remove_bad_points(info):
             if info.keep_fraction < 1:
                 start = start + int((1.-info.keep_fraction)*(line_count - start))
 
-            sys.stdout.write(": Removed")
+            sys.stdout.write(": Removed ")
             if info.markovian:
-                sys.stdout.write("%d non-markovian points," % markovian)
-            sys.stdout.write("%d points of burn-in," % burnin)
+                sys.stdout.write("%d non-markovian points, " % markovian)
+            sys.stdout.write("%d points of burn-in, " % burnin)
             if info.keep_fraction < 1:
-                sys.stdout.write("and first %.0f percent," % (100.*(1-info.keep_fraction)))
+                sys.stdout.write("and first %.0f percent, " % (100.*(1-info.keep_fraction)))
             print("keep %d steps" % (line_count-start))
 
         except IndexError:
