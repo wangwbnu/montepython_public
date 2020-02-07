@@ -440,7 +440,7 @@ class Lya_abg(Likelihood):
         param_backup = data.cosmo_arguments.copy()
 
         # To calculate the LCDM-equivalent, we need to remap the non-LCDM parameters, following 1412.6763
-        if 'xi_idr' in data.cosmo_arguments or 'N_ur' in data.cosmo_arguments or 'N_ncdm' in data.cosmo_arguments or 'N_dg' in data.cosmo_arguments:
+        if 'xi_idr' in data.cosmo_arguments or 'N_ur' in data.cosmo_arguments or 'N_ncdm' in data.cosmo_arguments or 'N_dg' in data.cosmo_arguments or 'N_idr' in data.cosmo_arguments:
             eta2=(1.+0.2271*classNeff)/(1.+0.2271*3.046)
             eta=np.sqrt(eta2)
 
@@ -458,17 +458,27 @@ class Lya_abg(Likelihood):
             if '100*theta_s' in data.cosmo_arguments:
                 raise io_mp.ConfigurationError('Error: run with H0 instead of 100*theta_s')
 
-            # Deal with Interacting Dark Matter with Dark Radiation (ETHOS-like models)
-            if 'xi_idr' in data.cosmo_arguments:
-                del data.cosmo_arguments['xi_idr']
-                if 'f_idm_dr' in data.cosmo_arguments:
-                    del data.cosmo_arguments['f_idm_dr']
 
-            # Deal with NADM-like models
-            if 'N_dg' in data.cosmo_arguments:
-                del data.cosmo_arguments['N_dg']
-                if 'f_idm_dr' in data.cosmo_arguments:
-                    del data.cosmo_arguments['f_idm_dr']
+            # Deal with Interacting Dark Matter with Dark Radiation (ETHOS-like models)
+            if 'xi_idr' in data.cosmo_arguments or 'N_idr' in data.cosmo_arguments or 'N_dg' in data.cosmo_arguments:
+                # Class can take Omega_idm_dr, omega_idm_dr, or f_idm_dr, so the following lines are needed to comput the lcdm equivalent
+                if 'Omega_idm_dr' in data.cosmo_arguments:
+                    if 'Omega_cdm' in data.cosmo_arguments:
+                        data.cosmo_arguments['Omega_cdm'] +=data.cosmo_arguments['Omega_idm_dr']
+                    if 'omega_cdm' in data.cosmo_arguments:
+                        data.cosmo_arguments['omega_cdm'] +=data.cosmo_arguments['Omega_idm_dr']*h*h/eta/eta
+                    del data.cosmo_arguments['Omega_idm_dr']
+                if 'omega_idm_dr' in data.cosmo_arguments:
+                    if 'Omega_cdm' in data.cosmo_arguments:
+                        data.cosmo_arguments['Omega_cdm'] +=data.cosmo_arguments['omega_idm_dr']/h/h
+                    if 'omega_cdm' in data.cosmo_arguments:
+                        data.cosmo_arguments['omega_cdm'] +=data.cosmo_arguments['omega_idm_dr']/eta2
+                    del data.cosmo_arguments['omega_idm_dr']
+                # Now we clean up variable no longer needed. We cover all possible cases of notation
+                to_remove = ['xi_idr','N_dg','N_idr','a_idm_dr','a_dark','Gamma_0_nadm','nindex_dark','n_index_idm_dr','f_idm_dr']
+                for bad in to_remove:
+                    if bad in data.cosmo_arguments:
+                        del data.cosmo_arguments[bad]
 
             # Deal with Hot Dark Matter
             if 'm_ncdm' in data.cosmo_arguments and not 'omega_ncdm' in data.cosmo_arguments and not 'Omega_ncdm' in data.cosmo_arguments:
@@ -478,14 +488,6 @@ class Lya_abg(Likelihood):
 
             # Deal with Warm Dark Matter
             if 'm_ncdm' in data.cosmo_arguments and ('omega_ncdm' in data.cosmo_arguments or 'Omega_ncdm' in data.cosmo_arguments):
-                del data.cosmo_arguments['m_ncdm']
-                del data.cosmo_arguments['k_per_decade_for_pk']
-                del data.cosmo_arguments['ncdm_fluid_approximation']
-                del data.cosmo_arguments['l_max_ncdm']
-                del data.cosmo_arguments['Number of momentum bins']
-                del data.cosmo_arguments['Maximum q']
-                del data.cosmo_arguments['Quadrature strategy']
-
                 if 'Omega_ncdm' in data.cosmo_arguments:
                     if 'Omega_cdm' in data.cosmo_arguments:
                         data.cosmo_arguments['Omega_cdm'] +=data.cosmo_arguments['Omega_ncdm']
@@ -498,12 +500,15 @@ class Lya_abg(Likelihood):
                     if 'omega_cdm' in data.cosmo_arguments:
                         data.cosmo_arguments['omega_cdm'] +=data.cosmo_arguments['omega_ncdm']/eta2
                     del data.cosmo_arguments['omega_ncdm']
+                remove = ['m_ncdm','T_ncdm','ncdm_fluid_approximation','l_max_ncdm','Number of momentum bins','Maximum q','Quadrature strategy']
+                for bad in remove:
+                    if bad in data.cosmo_arguments:
+                        del data.cosmo_arguments[bad]
 
         # Empty the CLASS parameters - This is done to calculate the LCDM-equivalent, later we will recover them.
         cosmo.struct_cleanup()
         cosmo.empty()
         cosmo.set(data.cosmo_arguments)
-
         cosmo.compute(['lensing'])
 
         # Call CLASS again to get the LCDM equivalent
@@ -522,7 +527,7 @@ class Lya_abg(Likelihood):
 
         # Calculate transfer function T(k)
         Tk = np.zeros(len(k), 'float64')
-        Tk = np.sqrt(Plin/Plin_equiv)
+        Tk = np.sqrt(abs(Plin)/abs(Plin_equiv)) # The abs is just a safety net, class should never give negative P(k) values
 
         # Second sanity check, to make sure the LCDM-equiv is not more than 10% off in the low-k range
         k_eq_der=cosmo.get_current_derived_parameters(['k_eq'])
@@ -570,7 +575,6 @@ class Lya_abg(Likelihood):
 
         k_fit = k[:index_k_fit_max]
         Tk_fit = Tk[:index_k_fit_max]
-
         # Define objective minimiser function: returns the array to be minimized
         def fcn2min(params, k, Tk):
             alpha = params['alpha']
@@ -588,6 +592,7 @@ class Lya_abg(Likelihood):
 
         # Do the fit with the least squares method
         minner = Minimizer(fcn2min, params, fcn_args=(k_fit, Tk_fit))
+
         result = minner.minimize(method = 'leastsq')
         best_alpha = result.params['alpha'].value
         best_beta  = result.params['beta'].value
