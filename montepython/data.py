@@ -802,16 +802,6 @@ class Data(object):
                 Omega_L = self.cosmo_arguments['Omega_L']
                 self.cosmo_arguments['omega_cdm'] = (1.-Omega_L)*h*h-omega_b
                 del self.cosmo_arguments[elem]
-            # infer omega_cdm from omega_m (assuming one standard massive neutrino and omega_nu=m_nu/93.14) and delete omega_m
-            elif elem == 'omega_m':
-                omega_b = self.cosmo_arguments['omega_b']
-                omega_m = self.cosmo_arguments['omega_m']
-                try:
-                    omega_nu = self.cosmo_arguments['m_ncdm'] / 93.14
-                except:
-                    omega_nu = 0.
-                self.cosmo_arguments['omega_cdm'] = omega_m - omega_b - omega_nu
-                del self.cosmo_arguments[elem]
             elif elem == 'ln10^{10}A_s':
                 self.cosmo_arguments['A_s'] = math.exp(
                     self.cosmo_arguments[elem]) / 1.e10
@@ -903,6 +893,74 @@ class Data(object):
                 #self.cosmo_arguments['m_ncdm__2'] = self.cosmo_arguments['deg_ncdm__2']*self.cosmo_arguments[elem]
                 m_s_eff = self.cosmo_arguments[elem]/self.cosmo_arguments['deg_ncdm__2']
                 self.cosmo_arguments['m_ncdm'] = r'%g, %g' % (float(self.cosmo_arguments['m_ncdm']), m_s_eff)
+                del self.cosmo_arguments[elem]
+            # infer omega_cdm from omega_m (assuming one standard massive neutrino and omega_nu=m_nu/93.14) and delete omega_m
+            # [NS] moved after the determination of self.cosmo_arguments['m_ncdm']
+            elif elem == 'omega_m':
+                omega_m = self.cosmo_arguments['omega_m']
+                if "N_ncdm" in self.cosmo_arguments and self.cosmo_arguments["N_ncdm"]>0:
+                    if "m_ncdm" in self.cosmo_arguments:
+                      omega_nu = self.cosmo_arguments['m_ncdm'] / 93.14
+                    elif "omega_ncdm" in self.cosmo_arguments:
+                      omega_nu = self.cosmo_arguments['omega_ncdm']
+                    elif "Omega_ncdm" in self.cosmo_arguments:
+                      if "h" in self.cosmo_arguments:
+                        omega_nu = self.cosmo_arguments['Omega_ncdm']*self.cosmo_arguments['h']**2
+                      elif "H0" in self.cosmo_arguments:
+                        omega_nu = self.cosmo_arguments['Omega_ncdm']*(self.cosmo_arguments['H0']/100.)**2
+                      else:
+                        raise ValueError("Could not find H directy, since none of {h,H0} are defined")
+                    else:
+                      raise ValueError("N_ncdm is greater than 0, but couldn't identify any of {m_ncdm,omega_ncdm,Omega_ncdm}")
+                else:
+                    omega_nu = 0.
+                if "omega_b" in self.cosmo_arguments:
+                  omega_b = self.cosmo_arguments['omega_b']
+                elif "Omega_b" in self.cosmo_arguments:
+                  if "h" in self.cosmo_arguments:
+                    omega_b = self.cosmo_arguments['Omega_b']*self.cosmo_arguments['h']**2
+                  elif "H0" in self.cosmo_arguments:
+                    omega_b = self.cosmo_arguments['Omega_b']*(self.cosmo_arguments['H0']/100.)**2
+                  else:
+                    raise ValueError("Could not find H directy, since none of {h,H0} are defined")
+                else:
+                  raise ValueError("Could not indentify any of {omega_b,Omega_b} for the definition of omega_m")
+                self.cosmo_arguments['omega_cdm'] = omega_m - omega_b - omega_nu
+                del self.cosmo_arguments[elem]
+            # Same as for 'omega_m', just with 'Omega_m' instead
+            elif elem == 'Omega_m':
+                Omega_m = self.cosmo_arguments['Omega_m']
+                if "N_ncdm" in self.cosmo_arguments and self.cosmo_arguments["N_ncdm"]>0:
+                    omega_nu = 0.
+                    if "m_ncdm" in self.cosmo_arguments:
+                      omega_nu = self.cosmo_arguments['m_ncdm'] / 93.14
+                    elif "omega_ncdm" in self.cosmo_arguments:
+                      omega_nu = self.cosmo_arguments['omega_ncdm']
+                    if "h" in self.cosmo_arguments:
+                      Omega_nu = omega_nu/(self.cosmo_arguments['h']**2)
+                    elif "H0" in self.cosmo_arguments:
+                      Omega_nu = omega_nu/(self.cosmo_arguments['H0']/100.)**2
+                    else:
+                      raise ValueError("Could not find H directy, since none of {h,H0} are defined")
+                    if omega_nu ==0.:
+                      if "Omega_ncdm" in self.cosmo_arguments:
+                        Omega_nu = self.cosmo_arguments["Omega_ncdm"]
+                      else:
+                        raise ValueError("N_ncdm is greater than 0, but couldn't identify any of {m_ncdm,omega_ncdm,Omega_ncdm}")
+                else:
+                    Omega_nu = 0.
+                if "Omega_b" in self.cosmo_arguments:
+                  Omega_b = self.cosmo_arguments['Omega_b']
+                elif "omega_b" in self.cosmo_arguments:
+                  if "h" in self.cosmo_arguments:
+                    Omega_b = self.cosmo_arguments['omega_b']/self.cosmo_arguments['h']**2
+                  elif "H0" in self.cosmo_arguments:
+                    Omega_b = self.cosmo_arguments['omega_b']/(self.cosmo_arguments['H0']/100.)**2
+                  else:
+                    raise ValueError("Could not find H directy, since none of {h,H0} are defined")
+                else:
+                  raise ValueError("Could not indentify any of {omega_b,Omega_b} for the definition of Omega_m")
+                self.cosmo_arguments['Omega_cdm'] = Omega_m - Omega_b - Omega_nu
                 del self.cosmo_arguments[elem]
             elif elem == 'log10N_dg':
                 self.cosmo_arguments['N_dg'] = 10**(self.cosmo_arguments[elem])
