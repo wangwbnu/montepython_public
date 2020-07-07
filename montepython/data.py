@@ -414,9 +414,10 @@ class Data(object):
         # new folder. Otherwise, this step will actually be done when
         # initializing the likelihood.
 
-        if self.param.find('log.param') == -1:
-            for experiment in self.experiments:
-                self.read_file(self.param, experiment, separate=True)
+        # [NS] the below line is not currently used to avoid a bug with using inputs from the param file
+        # if self.param.find('log.param') == -1:
+        for experiment in self.experiments:
+            self.read_file(self.param, experiment, separate=True)
 
         # Finally create all the instances of the Parameter given the input.
         for key, value in dictitems(self.parameters):
@@ -469,6 +470,7 @@ class Data(object):
             # add the folder of the likelihood to the path of libraries to...
             # ... import easily the likelihood.py program
             try:
+                sys.path.insert(0, os.path.abspath(self.path['MontePython']))
                 exec("from likelihoods.%s import %s" % (
                     elem, elem))
             except ImportError as message:
@@ -497,6 +499,14 @@ class Data(object):
                 else:
                     raise io_mp.ConfigurationError(
                         "The following key: '%s' was not found" % e)
+
+    # Custom function to replace string occurances
+    replace_string_type = []
+    def replace_string_occurance(self,m):
+        if m.group(1) is None:
+            return m.group()
+        else:
+            return m.group().replace(self.replace_string_type[0],self.replace_string_type[1])
 
     def read_file(self, param, structure, field='', separate=False):
         """
@@ -555,11 +565,12 @@ class Data(object):
                             # do not find the exact searched field
                             if lhs.find('.'.join([structure, field])) == -1:
                                 continue
-                        if not separate:
-                            exec(line.replace(structure+'.', 'self.').rstrip())
-                        else:
-                            exec(line.replace(
-                                structure+'.', 'self.'+structure+'.').rstrip())
+                            self.replace_string_type = [structure+'.','self.']
+                         else:
+                            self.replace_string_type = [structure+'.','self.'+structure+'.']
+                        # With this we can read from inside a .param file
+                        statement = re.sub(r"'[^']*'|([^']*)", self.replace_string_occurance, line) #Only replace outside of quotation marks
+                        exec(statement.rstrip())
 
     def group_parameters_in_blocks(self):
         """
