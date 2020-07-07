@@ -25,6 +25,7 @@ import fcntl
 import textwrap  # used to format the error messages
 import sys
 import io
+import warnings
 
 # Ascii art for error display
 START_LINE = {}
@@ -351,7 +352,10 @@ def get_tex_name(name, number=1):
     for elem in tex_greek:
         if elem in name:
             position = name.find(elem)
-            name = name[:position]+"""\\"""+name[position:]
+            if(position+len(elem) >= len(name) or name[position+len(elem)]=="_" or name[position+len(elem)]==" " or name[position+len(elem)]==")" or name[position+len(elem)]=="(" or name[position+len(elem)].isdigit()):
+              name = name[:position]+"""\\"""+name[position:]
+            else:
+              warnings.warn("Could not convert greek letter {0} in parameter {1}".format(elem,name))
     if name.find('_') != -1:
         temp_name = name.split('_')[0]+'_{'
         for i in range(1, len(name.split('_'))):
