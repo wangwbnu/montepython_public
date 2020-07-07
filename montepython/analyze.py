@@ -2108,8 +2108,8 @@ class Information(object):
         # Assign a unique id to this instance
         self.id = next(self._ids)
 
-        # Defining the sigma contours (1, 2 and 3-sigma)
-        self.levels = np.array([68.26, 95.4, 99.7])/100.
+        # Defining the sigma contours (1, 2 and 3-sigma, and 95% CL)
+        self.levels = np.concatenate([scipy.special.erf(np.array([1, 2, 3])/np.sqrt(2)),[0.95]])
 
         # Follows a bunch of initialisation to provide default members
         self.ref_names, self.backup_names = [], []
@@ -2281,6 +2281,10 @@ class Information(object):
                     self.mean+self.bounds[:, 2, 0])
             write_h(h_info, self.indices, '3-sigma < ', '% .6e',
                     self.mean+self.bounds[:, 2, 1])
+            write_h(h_info, self.indices, '95% > ', '% .6e',
+                    self.mean+self.bounds[:, -1, 0])
+            write_h(h_info, self.indices, '95% < ', '% .6e',
+                    self.mean+self.bounds[:, -1, 1])
 
     def write_v_info(self):
         """Write vertical info file"""
@@ -2289,7 +2293,7 @@ class Information(object):
             v_info.write(' '.join(['%-11s' % elem for elem in [
                 'Best fit', 'mean', 'sigma', '1-sigma -', '1-sigma +',
                 '2-sigma -', '2-sigma +', '1-sigma >', '1-sigma <',
-                '2-sigma >', '2-sigma <']]))
+                '2-sigma >', '2-sigma <', '95% CL >', '95% CL <']]))
             for index, name in zip(self.indices, self.info_names):
                 v_info.write('\n%-15s\t: % .4e' % (name, self.R[index]))
                 v_info.write(' '.join(['% .4e' % elem for elem in [
@@ -2300,7 +2304,9 @@ class Information(object):
                     self.mean[index]+self.bounds[index, 0, 0],
                     self.mean[index]+self.bounds[index, 0, 1],
                     self.mean[index]+self.bounds[index, 1, 0],
-                    self.mean[index]+self.bounds[index, 1, 1]]]))
+                    self.mean[index]+self.bounds[index, 1, 1],
+                    self.mean[index]+self.bounds[index, -1, 0],
+                    self.mean[index]+self.bounds[index, -1, 1]]]))
 
     def write_tex(self):
         """Write a tex table containing the main results """
@@ -2314,8 +2320,8 @@ class Information(object):
                     self.bestfit[index], self.mean[index],
                     self.bounds[index, 0, 0], self.bounds[index, 0, 1]))
                 tex.write("& $%.4g$ & $%.4g$ \\\\ \n" % (
-                    self.mean[index]+self.bounds[index, 1, 0],
-                    self.mean[index]+self.bounds[index, 1, 1]))
+                    self.mean[index]+self.bounds[index, -1, 0],
+                    self.mean[index]+self.bounds[index, -1, 1]))
 
             tex.write("\\hline \n \\end{tabular} \\\\ \n")
             tex.write("$-\ln{\cal L}_\mathrm{min} =%.6g$, " % (
