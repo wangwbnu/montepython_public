@@ -529,6 +529,17 @@ def compute_posterior(information_instances):
             x_span = conf.force_limits[name][1]-conf.force_limits[name][0]
             tick_min = conf.force_limits[name][0] +0.1*x_span
             tick_max = conf.force_limits[name][1] -0.1*x_span
+            # [NS] We want to make sure that if there are boundaries, we don't overshoot them by the force_limits
+            # (In force_limits you can only provide the limits up to the 0.1*x_span rescaling)
+            bounds = info.boundaries[info.native_index]
+            # Left boundary
+            if bounds[0] is not None:
+                if conf.force_limits[name][0] <= bounds[0]:
+                    tick_min = bounds[0]
+            # Right boundary
+            if bounds[-1] is not None:
+                if conf.force_limits[name][1] > bounds[-1]:
+                    tick_max = bounds[-1]
             ticks = np.linspace(tick_min,
                                 tick_max,
                                 info.ticknumber)
