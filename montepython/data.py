@@ -396,9 +396,14 @@ class Data(object):
 
         # Test here whether the number of parameters extracted correspond to
         # the number of lines (to make sure no doublon is present)
-        number_of_parameters = sum(
-            [1 for l in open(self.param, 'r') if l and l.find('#') == -1
-             and l.find('data.parameters[') != -1])
+        # Changed to ignore '#' after a data.parameters[x]=y line
+        number_of_parameters=0
+        for line in open(self.param,'r'):
+          if(line):
+            if(line.find("#") != -1):
+              line = line.split("#")[0]
+            if(line.find('data.parameters[') != -1):
+              number_of_parameters+=1
         if number_of_parameters != len(self.parameters):
             raise io_mp.ConfigurationError(
                 "You probably have two lines in your parameter files with "
@@ -408,6 +413,7 @@ class Data(object):
         # Do the same for every experiments - but only if you are starting a
         # new folder. Otherwise, this step will actually be done when
         # initializing the likelihood.
+
         if self.param.find('log.param') == -1:
             for experiment in self.experiments:
                 self.read_file(self.param, experiment, separate=True)
@@ -537,7 +543,10 @@ class Data(object):
             exec("self.%s = Container()" % structure)
         with open(param, 'r') as param_file:
             for line in param_file:
-                if line.find('#') == -1 and line:
+                if line:
+                    # Only use contents in param_file before any '#' character
+                    if line.find("#") != -1:
+                        line = line.split("#")[0]
                     lhs = line.split('=')[0]
                     if lhs.find(structure+'.') != -1:
                         if field:
