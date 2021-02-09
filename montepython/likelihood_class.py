@@ -2497,7 +2497,7 @@ class Likelihood_sn(Likelihood):
         # Note that this function does not require to skiprows, as it
         # understands the convention of writing the length in the first
         # line
-        matrix = read_table(path).as_matrix().reshape((length, length))
+        matrix = read_table(path).to_numpy().reshape((length, length))
 
         return matrix
 
