@@ -486,7 +486,7 @@ class File(io.FileIO):
             total_bytes_scanned += byte_block
             lines_found += self.read(1024).count(b'\n')
         self.seek(-total_bytes_scanned, 2)
-        line_list = list([line.decode('utf-8') for line in self.readlines()])
+        line_list = [line.decode('utf-8') for line in self.readlines()]
         return line_list[-lines_2find:]
 
 
