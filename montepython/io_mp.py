@@ -353,7 +353,7 @@ def get_tex_name(name, number=1):
         if elem in name:
             position = name.find(elem)
             if(position+len(elem) >= len(name) or name[position+len(elem)]=="_" or name[position+len(elem)]==" " or name[position+len(elem)]==")" or name[position+len(elem)]=="(" or name[position+len(elem)].isdigit()):
-              name = name[:position]+"""\\"""+name[position:]
+              name = name[:position]+"""\\"""+name[position:position+len(elem)]+"{}"+name[position+len(elem):]
             else:
               warnings.warn("Could not convert greek letter {0} in parameter {1}".format(elem,name))
     if name.find('_') != -1:
