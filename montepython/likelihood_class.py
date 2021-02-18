@@ -2048,7 +2048,7 @@ class Likelihood_mpk(Likelihood):
                 P_lin = np.interp(self.kh, self.k_fid, P)
 
         elif self.use_sdssDR7:
-            kh = np.logspace(math.log(1e-3),math.log(1.0),num=(math.log(1.0)-math.log(1e-3))/0.01+1,base=math.exp(1.0)) # k in h/Mpc
+            kh = np.geomspace(1e-3,1,num=int((math.log(1.0)-math.log(1e-3))/0.01)+1) # k in h/Mpc
             # Rescale the scaling factor by the fiducial value for h divided by the sampled value
             # h=0.701 was used for the N-body calibration simulations
             scaling = scaling * (0.701/h)
@@ -2496,7 +2496,7 @@ class Likelihood_sn(Likelihood):
         # Note that this function does not require to skiprows, as it
         # understands the convention of writing the length in the first
         # line
-        matrix = read_table(path).as_matrix().reshape((length, length))
+        matrix = read_table(path).to_numpy().reshape((length, length))
 
         return matrix
 
