@@ -62,10 +62,9 @@ class Likelihood(object):
 
         # Recover the values potentially read in the input.param file.
         if hasattr(data, self.name):
-            attributes = []
-            exec("attributes = [e for e in dir(data.%s) if e.find('__') == -1]" % self.name)
+            attributes = [e for e in dir(getattr(data,self.name)) if e.find('__') == -1]
             for elem in attributes:
-                exec("setattr(self, elem, getattr(data.%s, elem))" % self.name)
+                setattr(self, elem, getattr(getattr(data,self.name), elem))
 
         # Read values from the data file
         self.read_from_file(path, data, command_line)
@@ -2049,7 +2048,7 @@ class Likelihood_mpk(Likelihood):
                 P_lin = np.interp(self.kh, self.k_fid, P)
 
         elif self.use_sdssDR7:
-            kh = np.logspace(math.log(1e-3),math.log(1.0),num=(math.log(1.0)-math.log(1e-3))/0.01+1,base=math.exp(1.0)) # k in h/Mpc
+            kh = np.geomspace(1e-3,1,num=int((math.log(1.0)-math.log(1e-3))/0.01)+1) # k in h/Mpc
             # Rescale the scaling factor by the fiducial value for h divided by the sampled value
             # h=0.701 was used for the N-body calibration simulations
             scaling = scaling * (0.701/h)

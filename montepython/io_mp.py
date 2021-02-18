@@ -353,7 +353,7 @@ def get_tex_name(name, number=1):
         if elem in name:
             position = name.find(elem)
             if(position+len(elem) >= len(name) or name[position+len(elem)]=="_" or name[position+len(elem)]==" " or name[position+len(elem)]==")" or name[position+len(elem)]=="(" or name[position+len(elem)].isdigit()):
-              name = name[:position]+"""\\"""+name[position:]
+              name = name[:position]+"""\\"""+name[position:position+len(elem)]+"{}"+name[position+len(elem):]
             else:
               warnings.warn("Could not convert greek letter {0} in parameter {1}".format(elem,name))
     if name.find('_') != -1:
@@ -484,9 +484,9 @@ class File(io.FileIO):
             byte_block = min(1024, bytes_in_file-total_bytes_scanned)
             self.seek(-(byte_block+total_bytes_scanned), 2)
             total_bytes_scanned += byte_block
-            lines_found += self.read(1024).count('\n')
+            lines_found += self.read(1024).count(b'\n')
         self.seek(-total_bytes_scanned, 2)
-        line_list = list(self.readlines())
+        line_list = [line.decode('utf-8') for line in self.readlines()]
         return line_list[-lines_2find:]
 
 
