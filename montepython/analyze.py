@@ -267,7 +267,6 @@ def convergence(info):
     # Recovering parameter names and scales, creating tex names,
     extract_parameter_names(info)
 
-
     # Circle through all files to find the global maximum of likelihood
     #print('--> Finding global maximum of likelihood')
     find_maximum_of_likelihood(info)
@@ -281,14 +280,16 @@ def convergence(info):
     #print('--> Removing burn-in')
     spam = remove_bad_points(info)
 
+    # Re-Map the given parameters
     info.remap_parameters(spam)
-    # Now that the list spam contains all the different chains removed of
-    # their respective burn-in, proceed to the convergence computation
 
     # Now that the number of parameters is known 
     # (and updated from the remap_parameters)
     # the array containing bounds can be initialised
     info.bounds = np.zeros((len(info.ref_names), len(info.levels), 2))
+
+    # Now that the list spam contains all the different chains removed of
+    # their respective burn-in, proceed to the convergence computation
 
     # 2D arrays for mean and var, one column will contain the total (over
     # all chains) mean (resp. variance), and each other column the
@@ -2093,6 +2094,12 @@ class Information(object):
         """
         self.to_derive = {}
         """
+        Array of names to re-order in the plotting. Names not included in this list
+        will appear at the end in their usual ordering
+
+        """
+        self.to_reorder = []
+        """
         Dictionary whose keys are new parameter names and values are formulas to calculate them.
         For instance :code:`{'beta_plus_lambda':'beta+lambda'}`
 
@@ -2215,15 +2222,38 @@ class Information(object):
                 # If everything was successfull, add the corresponding info
                 self.ref_names.append(key)
                 self.tex_names.append(io_mp.get_tex_name(key,number=1))
-                self.boundaries.append([None,None])
                 self.backup_names.append(key)
+                self.boundaries.append([None,None])
                 N = len(self.scales)
                 self.scales = np.vstack([np.hstack([self.scales,np.zeros((N,1))]),np.zeros((N+1,1)).T])
                 self.scales[-1,-1]=1
-                self.rescales = np.append(self.rescales,1)
+                self.rescales = np.vstack([np.hstack([self.rescales,np.zeros((N,1))]),np.zeros((N+1,1)).T])
+                self.rescales[-1,-1]=1
                 self.number_parameters +=1
                 self.plotted_parameters.append(key)
                 self.centers = np.append(self.centers,0)
+        if hasattr(self, 'to_reorder'):
+            if(len(self.to_reorder)>0):
+                indices = [self.backup_names.index(name) for name in self.to_reorder]
+                missing_indices = [x for x in np.arange(len(self.backup_names)) if x not in indices]
+                indices = np.concatenate([indices,missing_indices])
+                self.ref_names = [self.ref_names[i] for i in indices]
+                self.tex_names = [self.tex_names[i] for i in indices]
+                self.backup_names = [self.backup_names[i] for i in indices]
+                self.boundaries = [self.boundaries[i] for i in indices]
+                self.scales = self.scales[indices][:,indices]
+                self.rescales = self.rescales[indices][:,indices]
+                self.centers = self.centers[indices]
+                # Re-sort spam (barely any overhead, due to numpy's internal memory views)
+                for i in xrange(len(spam)):
+                    spam[i][:,2:] = spam[i][:,indices+2]
+                # Play the same game independently for plotted_parameters
+                # since these might be a lot fewer
+                indices = [self.plotted_parameters.index(name) for name in self.to_reorder]
+                if(len(indices)>0):
+                  missing_indices = [x for x in np.arange(len(self.plotted_parameters)) if x not in indices]
+                  indices = np.concatenate([indices,missing_indices])
+                  self.plotted_parameters = [self.plotted_parameters[i] for i in indices]
 
     def define_ticks(self):
         """

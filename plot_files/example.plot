@@ -5,7 +5,13 @@
 # Use this to derive a new parameter,
 # defined as a function of one or more existing parameters.
 # The derived parameter can be included for further derived parameters if in the correct order
-# info.to_derive = {'der1':'H0*H0*omega_cdm','der2':'der1*H0'}
+#info.to_derive = {'der1':'H0*H0*omega_cdm','der2':'der1*H0'}
+
+
+# Use this to re-order the parameters
+# The parameters in this list will be plotted first in the given order
+# Afterwards (if not excluded by to_plot) the other parameters are plotted
+#info.to_reorder = ['der2','H0']
 
 # Use this to rename a parameter (e.g. to make it look better in the labels).
 # If you don't use dollars '$...$' the code will try automatically
