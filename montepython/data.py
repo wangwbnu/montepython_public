@@ -566,7 +566,9 @@ class Data(object):
                             if lhs.find('.'.join([structure, field])) == -1:
                                 continue
                             self.replace_string_type = [structure+'.','self.']
-                         else:
+                        elif structure == "data":
+                            self.replace_string_type = [structure+'.','self.']
+                        else:
                             self.replace_string_type = [structure+'.','self.'+structure+'.']
                         # With this we can read from inside a .param file
                         statement = re.sub(r"'[^']*'|([^']*)", self.replace_string_occurance, line) #Only replace outside of quotation marks
