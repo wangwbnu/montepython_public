@@ -266,9 +266,7 @@ def convergence(info):
     """
     # Recovering parameter names and scales, creating tex names,
     extract_parameter_names(info)
-    # Now that the number of parameters is known, the array containing bounds
-    # can be initialised
-    info.bounds = np.zeros((len(info.ref_names), len(info.levels), 2))
+
 
     # Circle through all files to find the global maximum of likelihood
     #print('--> Finding global maximum of likelihood')
@@ -286,6 +284,11 @@ def convergence(info):
     info.remap_parameters(spam)
     # Now that the list spam contains all the different chains removed of
     # their respective burn-in, proceed to the convergence computation
+
+    # Now that the number of parameters is known 
+    # (and updated from the remap_parameters)
+    # the array containing bounds can be initialised
+    info.bounds = np.zeros((len(info.ref_names), len(info.levels), 2))
 
     # 2D arrays for mean and var, one column will contain the total (over
     # all chains) mean (resp. variance), and each other column the
@@ -2088,6 +2091,12 @@ class Information(object):
         new ones. For instance :code:`{'beta_plus_lambda':'beta+lambda'}`
 
         """
+        self.to_derive = {}
+        """
+        Dictionary whose keys are new parameter names and values are formulas to calculate them.
+        For instance :code:`{'beta_plus_lambda':'beta+lambda'}`
+
+        """
         self.to_plot = []
         """
         Array of names of parameters to plot. If left empty, all will be
@@ -2183,6 +2192,38 @@ class Information(object):
                             exec("%s = spam[i][:, %i]" % (name, index))
                         # Assign to the desired index the combination
                         exec("spam[i][:, %i] = %s" % (index_to_change, value))
+        if hasattr(self, 'to_derive'):
+            for key, value in dictitems(self.to_derive):
+                print(' /|\  Creating new parameter', key)
+                print('/_o_\ with formula ' + key + " = "+value)
+                # Recover all indices of all variables present in the
+                # remapping
+                variable_names = [elem for elem in self.backup_names if
+                                  value.find(elem) != -1]
+                indices = [self.backup_names.index(name)+2 for name in
+                           variable_names]
+                # Now loop over all files in spam
+                for i in xrange(len(spam)):
+                    # For each file expand the dimension of spam by one
+                    spam[i] = np.hstack([spam[i],np.empty((len(spam[i]),1))])
+                    # Assign local variables to their values
+                    for index, name in zip(indices, variable_names):
+                        exec("%s = spam[i][:, %i]" % (name, index))
+                    # Assign to to the appended array the combination
+                    exec("spam[i][:,-1] = %s" % (value))
+
+                # If everything was successfull, add the corresponding info
+                self.ref_names.append(key)
+                self.tex_names.append(io_mp.get_tex_name(key,number=1))
+                self.boundaries.append([None,None])
+                self.backup_names.append(key)
+                N = len(self.scales)
+                self.scales = np.vstack([np.hstack([self.scales,np.zeros((N,1))]),np.zeros((N+1,1)).T])
+                self.scales[-1,-1]=1
+                self.rescales = np.append(self.rescales,1)
+                self.number_parameters +=1
+                self.plotted_parameters.append(key)
+                self.centers = np.append(self.centers,0)
 
     def define_ticks(self):
         """
