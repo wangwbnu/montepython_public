@@ -2,10 +2,17 @@
 # Modify as desired by uncommenting relevant lines starting with "info."
 
 #### Options related to the parameters.
-# Use this to derive a new parameter,
-# defined as a function of one or more existing parameters.
-# The derived parameter can be included for further derived parameters if in the correct order
-# info.to_derive = {'der1':'H0*H0*omega_cdm','der2':'der1*H0'}
+# Use this to derive a new parameter.
+# The new parameter can be defined as a function of one or more existing
+# parameters. The derived parameter can be included for further derived
+# parameters if in the correct order
+#info.to_derive = {'der1':'H0*H0*omega_cdm','der2':'der1*H0'}
+
+# Use this to re-order the parameters
+# The parameters in this list will be plotted first, using the order provided.
+# Afterwards (if not excluded by to_plot) the other parameters are plotted
+# in the order they appear in the .param file.
+#info.to_reorder = ['der2','H0']
 
 # Use this to rename a parameter (e.g. to make it look better in the labels).
 # If you don't use dollars '$...$' the code will try automatically
@@ -120,6 +127,8 @@
 # is the order in the log.param, NOT the order in this dictionary!
 # This will also modify the bestfit file in a possibly unsafe way.
 #info.redefine = {'omega_cdm': '(0.01*omega_b+omega_cdm)/(H0/100.)**2'}
+
+
 # Any other lines of plain python can be written here without special
 # formatting, they will be executed as extra lines of codes, but only
 # at a precise point in the initialisation of the "Information" class.
