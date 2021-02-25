@@ -100,15 +100,20 @@
 
 # Width of gaussian smoothing for plotting posteriors in units
 # of bin size, increase for smoother appearance.
-#info.gaussian_smoothing = 0.35
+# If non-Gaussian posteriors recommend setting to 0.35
+#info.gaussian_smoothing = 0.5
 
 # Interpolation factor for plotting posteriors, 1 means no interpolation,
 # increase for smoother contours (integer).
-#info.interpolation_smoothing = 2
+# If non-Gaussian posteriors recommend setting to 2
+#info.interpolation_smoothing = 4
 
 # Smoothing scheme for 1d posteriors, 0 means no smoothing, 1 means cubic
 # interpolation, higher means fitting ln(L) with polynomial of order n (integer).
-#info.posterior_smoothing = 0
+# IF NON-GAUSSIAN POSTERIORS TURN THIS OFF (set to 0)
+# There are recommended lines to flip in montepython/analyze.py to make
+# plots nicer in this case. Search for posterior_smoothing
+#info.posterior_smoothing = 5
 
 
 #### Add extra features to the plot via python scripts.

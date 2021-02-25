@@ -567,7 +567,10 @@ def compute_posterior(information_instances):
                 # simply the histogram from the chains, with few bins
                 #
                 info.hist, info.bin_edges = np.histogram(
-                    info.chain[:, info.native_index+2], bins=2*info.bins,
+                    # TB: without posterior_smoothing it can be nice to increase the
+                    # number of bins here.
+                    info.chain[:, info.native_index+2], bins=info.bins,
+                    #info.chain[:, info.native_index+2], bins=2*info.bins,
                     weights=info.chain[:, 0], normed=False, density=False)
                 info.hist = info.hist/info.hist.max()
                 # Correct for temperature
@@ -603,10 +606,12 @@ def compute_posterior(information_instances):
                 interpolation_factor = float(len(info.interp_grid))/float(len(info.bincenters))
                 # factor for gaussian smoothing
                 sigma = interpolation_factor*info.gaussian_smoothing
+                # TB: A nice option when turning off posterior_smoothing is to turn on the following
+                # two lines of code
                 # smooth
-                smoothed_interp_hist = scipy.ndimage.filters.gaussian_filter(info.interp_hist,sigma)
+                #smoothed_interp_hist = scipy.ndimage.filters.gaussian_filter(info.interp_hist,sigma)
                 # re-normalised
-                smoothed_interp_hist = smoothed_interp_hist/smoothed_interp_hist.max()
+                #smoothed_interp_hist = smoothed_interp_hist/smoothed_interp_hist.max()
 
                 if conf.plot_2d and conf.plot_diag:
 
@@ -615,10 +620,11 @@ def compute_posterior(information_instances):
                     ##################################################
                     plot = ax2d.plot(
                         info.interp_grid,
+                        # TB: if no posterior_smoothing uncomment/recomment the next two lines of code
                         # version without gaussian smoothing:
-                        #info.interp_hist,
+                        info.interp_hist,
                         # version with gaussian smoothing (commented)
-                        smoothed_interp_hist,
+                        #smoothed_interp_hist,
                         linewidth=info.line_width, ls='-',
                         color = info.MP_color_cycle[info.id][1],
                         # the [1] picks up the color of the 68% contours
@@ -697,10 +703,11 @@ def compute_posterior(information_instances):
                     ##################################################
                     ax1d.plot(
                         info.interp_grid,
+                        # TB: if no posterior_smoothing uncomment/recomment the next two lines of code
                         # 1d posterior without gaussian filter:
-                        #info.interp_hist,
+                        info.interp_hist,
                         # gaussian filtered 1d posterior (commented):
-                        smoothed_interp_hist,
+                        #smoothed_interp_hist,
                         # raw 1d posterior:
                         #info.interp_hist,
                         lw=info.line_width, ls='-',
@@ -747,10 +754,11 @@ def compute_posterior(information_instances):
                         # apply gaussian smoothing (obsolete - we don't do it anymore since the option --posterior-smoothing
                         # was defined, so we commented out this part)
                         #
+                        # TB: if no posterior_smoothing uncomment the next two lines of code
                         # smooth
-                        smoothed_interp_lkl_mean = scipy.ndimage.filters.gaussian_filter(interp_lkl_mean,sigma)
+                        #smoothed_interp_lkl_mean = scipy.ndimage.filters.gaussian_filter(interp_lkl_mean,sigma)
                         # re-normalised
-                        smoothed_interp_lkl_mean = smoothed_interp_lkl_mean/smoothed_interp_lkl_mean.max()
+                        #smoothed_interp_lkl_mean = smoothed_interp_lkl_mean/smoothed_interp_lkl_mean.max()
 
                         # Execute some customisation scripts for the 1d plots
                         if (info.custom1d != []):
@@ -768,10 +776,11 @@ def compute_posterior(information_instances):
                             #          alpha = info.alphas[info.id])
                             # smoothed and interpolated mean likelihoods:
                             ax2d.plot(interp_grid,
+                                      # TB: if no posterior_smoothing uncomment/recomment the next two lines of code
                                       # version without gaussian smoothing:
-                                      #interp_lkl_mean,
+                                      interp_lkl_mean,
                                       # version with gaussian smoothing (commented)
-                                      smoothed_interp_lkl_mean,
+                                      #smoothed_interp_lkl_mean,
                                       ls='--', lw=conf.line_width,
                                       color = info.MP_color_cycle[info.id][1],
                                       alpha = info.alphas[info.id])
@@ -787,10 +796,11 @@ def compute_posterior(information_instances):
                             #          alpha = info.alphas[info.id])
                             # smoothed and interpolated mean likelihoods:
                             ax1d.plot(interp_grid,
+                                      # TB: if no posterior_smoothing uncomment/recomment the next two lines of code
                                       # version without gaussian smoothing
-                                      #interp_lkl_mean,
+                                      interp_lkl_mean,
                                       # version with gaussian smoothing (commented)
-                                      smoothed_interp_lkl_mean,
+                                      #smoothed_interp_lkl_mean,
                                       ls='--', lw=conf.line_width,
                                       color = info.MP_color_cycle[info.id][1],
                                       alpha = info.alphas[info.id])
