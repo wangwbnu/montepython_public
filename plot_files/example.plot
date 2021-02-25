@@ -47,13 +47,13 @@
 
 
 #### Customize appearance of contours.
-# If you want to change the order of colors
-# (same order as for legendnames).
-#info.MP_color_cycle = [info.MP_color['Green'], info.MP_color['Orange'], info.MP_color['Blue']]
-
 # You may actually even redefine the colors
 # (each pair stands for [95% contour color,68% contour color]).
 #info.MP_color = {'Red':['#E37C80','#CE121F'],'Blue':['#7A98F6','#1157EF'],'Green':['#88B27A','#297C09'],'Orange':['#F3BE82','#ED920F'],'Grey':['#ABABAB','#737373'],'Purple':['#B87294','#88004C']}
+
+# If you want to change the order of colors
+# (same order as for legendnames).
+#info.MP_color_cycle = [info.MP_color['Green'], info.MP_color['Orange'], info.MP_color['Blue']]
 
 # Adjust the transparency of the lines and filled contours
 # (same order as for legendnames).
@@ -100,15 +100,15 @@
 
 # Width of gaussian smoothing for plotting posteriors in units
 # of bin size, increase for smoother appearance.
-#info.gaussian_smoothing = 0.5
+#info.gaussian_smoothing = 0.35
 
 # Interpolation factor for plotting posteriors, 1 means no interpolation,
 # increase for smoother contours (integer).
-#info.interpolation_smoothing = 4
+#info.interpolation_smoothing = 2
 
 # Smoothing scheme for 1d posteriors, 0 means no smoothing, 1 means cubic
 # interpolation, higher means fitting ln(L) with polynomial of order n (integer).
-#info.posterior_smoothing = 5
+#info.posterior_smoothing = 0
 
 
 #### Add extra features to the plot via python scripts.
