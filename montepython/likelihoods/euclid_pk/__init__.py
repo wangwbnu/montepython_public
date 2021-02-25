@@ -217,9 +217,11 @@ class euclid_pk(Likelihood):
                 fid_file.write('\n')
                 for index_k in xrange(self.k_size):
                     for index_z in xrange(2*self.nbin+1):
+                        #### Replace pk_cb with pk if no massive neutrinos (CLASS gives error)
                         pk[index_k, index_z] = cosmo.pk_cb(
                             self.k_fid[index_k], self.z[index_z])
                         if self.use_linear_rsd:
+                            #### Replace pk_cb with pk if no massive neutrinos (CLASS gives error)
                             pk_lin[index_k, index_z] = cosmo.pk_cb_lin(
                                 self.k_fid[index_k], self.z[index_z])
                             fid_file.write('%.8g %.8g\n' % (pk[index_k, index_z], pk_lin[index_k, index_z]))
@@ -296,8 +298,10 @@ class euclid_pk(Likelihood):
         # TODO: the likelihood could be sped up if this could be vectorised, either here,
         # or inside classy where there are three loops in the function get_pk
         # (maybe with a different strategy for the arguments of the function)
+        #### Replace pk_cb with pk if no massive neutrinos (CLASS gives error)
         pk_nl_th = cosmo.get_pk_cb(self.k,self.z,self.k_size,2*self.nbin+1,self.mu_size)
         if self.use_linear_rsd:
+            #### Replace pk_cb with pk if no massive neutrinos (CLASS gives error)
             pk_lin_th = cosmo.get_pk_cb_lin(self.k,self.z,self.k_size,2*self.nbin+1,self.mu_size)
 
         # Define the alpha function, that will characterize the theoretical
