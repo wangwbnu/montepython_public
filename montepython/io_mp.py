@@ -516,7 +516,7 @@ def lock(file_obj, flags):
     except IOError as exc_value:
         # The exception code varies on different systems so we'll catch
         # every IO error
-        raise LockError(*exc_value)
+        raise LockError(exc_value)
 
 
 def unlock(file_obj):
