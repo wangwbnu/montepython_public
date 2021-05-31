@@ -2107,14 +2107,14 @@ class Information(object):
         """
         self.to_derive = {}
         """
-        Array of names to re-order in the plotting. Names not included in this list
-        will appear at the end in their usual ordering
+        Dictionary whose keys are new parameter names and values are formulas to calculate them.
+        For instance :code:`{'beta_plus_lambda':'beta+lambda'}`
 
         """
         self.to_reorder = []
         """
-        Dictionary whose keys are new parameter names and values are formulas to calculate them.
-        For instance :code:`{'beta_plus_lambda':'beta+lambda'}`
+        Array of names to re-order in the plotting. Names not included in this list
+        will appear at the end in their usual ordering
 
         """
         self.to_plot = []
