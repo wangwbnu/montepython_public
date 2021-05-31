@@ -2249,7 +2249,7 @@ class Information(object):
             if(len(self.to_reorder)>0):
                 indices = [self.backup_names.index(name) for name in self.to_reorder]
                 missing_indices = [x for x in np.arange(len(self.backup_names)) if x not in indices]
-                indices = np.concatenate([indices,missing_indices])
+                indices = np.concatenate([indices,missing_indices],dtype=int)
                 self.ref_names = [self.ref_names[i] for i in indices]
                 self.tex_names = [self.tex_names[i] for i in indices]
                 self.backup_names = [self.backup_names[i] for i in indices]
