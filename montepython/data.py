@@ -248,7 +248,7 @@ class Data(object):
             with open(common_file_path, 'r') as common_file:
                 for line in common_file:
                     if line.find('_VERSION_') != -1:
-                        self.version = line.split()[-1].replace('"', '')
+                        self.version = str(line.split()[-1].replace('"', ''))
                         break
             if not command_line.silent and not rank:
                 print('with CLASS %s' % self.version)
@@ -257,16 +257,21 @@ class Data(object):
                 # This nul_file helps to get read of a potential useless error
                 # message
                 with open(os.devnull, "w") as nul_file:
-                    self.git_version = sp.Popen(
+                    self.git_version = str(sp.Popen(
                         ["git", "rev-parse", "HEAD"],
                         cwd=self.path['cosmo'],
                         stdout=sp.PIPE,
-                        stderr=nul_file).communicate()[0].strip()
-                    self.git_branch = sp.Popen(
+                        stderr=nul_file).communicate()[0].strip())
+                    self.git_branch = str(sp.Popen(
                         ["git", "rev-parse", "--abbrev-ref", "HEAD"],
                         cwd=self.path['cosmo'],
                         stdout=sp.PIPE,
-                        stderr=nul_file).communicate()[0].strip()
+                        stderr=nul_file).communicate()[0].strip())
+                    # Possible conversion from bytestring b'xxx' to normal string
+                    if self.git_version.startswith("b'"):
+                        self.git_version = self.git_version[2:-1]
+                    if self.git_branch.startswith("b'"):
+                        self.git_branch = self.git_branch[2:-1]
             except (sp.CalledProcessError, OSError):
                 # Note, OSError seems to be raised on some systems, instead of
                 # sp.CalledProcessError - which seems to be linked to the
@@ -689,7 +694,12 @@ class Data(object):
             first_line)
         version = first_line.split()[1]
         git_branch, git_version = regexp.groups()
-        return version, git_version, git_branch
+        # Possible conversion from bytestring b'xxx' to normal string
+        if git_branch.startswith("b'"):
+          git_branch = git_branch[2:-1]
+        if git_version.startswith("b'"):
+          git_version = git_version[2:-1]
+        return str(version), str(git_version), str(git_branch)
 
     def get_mcmc_parameters(self, table_of_strings):
         """
