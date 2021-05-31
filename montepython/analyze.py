@@ -1014,7 +1014,7 @@ def compute_posterior(information_instances):
                                     info.tex_names[info.native_second_index],
                                     fontsize=info.fontsize)
                         else:
-                            ax2dsub.set_xticklabels([''])
+                            ax2dsub.set_xticklabels([])
 
                         ax2dsub.set_yticks(info.ticks[info.native_index])
                         if second_index == 0:
@@ -1023,7 +1023,7 @@ def compute_posterior(information_instances):
                                  info.ticks[info.native_index]],
                                 fontsize=info.ticksize)
                         else:
-                            ax2dsub.set_yticklabels([''])
+                            ax2dsub.set_yticklabels([])
 
                         if conf.legend_style == 'sides':
                             if second_index == 0:
