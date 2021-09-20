@@ -53,7 +53,7 @@ class Prior(object):
 
         # Store boundaries for convenient access later
         # Put all fields that are -1 to None to avoid confusion later on.
-        self.prior_range = [a if not((a is -1) or (a is None)) else None
+        self.prior_range = [a if not((a == -1) or (a == None)) else None
                             for a in deepcopy(array[1:3])]
 
     def draw_from_prior(self):

@@ -350,7 +350,7 @@ def get_tex_name(name, number=1):
     tex_greek = ['omega', 'tau', 'alpha', 'beta', 'delta', 'nu',
                  'Omega', 'Lambda', 'lambda', 'Delta', 'mu', 'sigma', 'gamma', 'theta']
     for elem in tex_greek:
-        if elem in name:
+        if ((elem+" " in name) or (elem+"_" in name)):
             position = name.find(elem)
             if(position+len(elem) >= len(name) or name[position+len(elem)]=="_" or name[position+len(elem)]==" " or name[position+len(elem)]==")" or name[position+len(elem)]=="(" or name[position+len(elem)].isdigit()):
               name = name[:position]+"""\\"""+name[position:position+len(elem)]+"{}"+name[position+len(elem):]
@@ -516,7 +516,7 @@ def lock(file_obj, flags):
     except IOError as exc_value:
         # The exception code varies on different systems so we'll catch
         # every IO error
-        raise LockError(*exc_value)
+        raise LockError(exc_value)
 
 
 def unlock(file_obj):

@@ -745,7 +745,7 @@ def compute_lkl(cosmo, data):
                     "You interrupted execution")
         else:
             try:
-                cosmo.compute(["lensing"])
+                cosmo.compute()
             except CosmoComputationError as failure_message:
                 # could be useful to uncomment for debugging:
                 #np.set_printoptions(precision=30, linewidth=150)
