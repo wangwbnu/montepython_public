@@ -838,6 +838,11 @@ def chain(cosmo, data, command_line):
 
         # Regularly (option to set in parameter file), close and reopen the
         # buffer to force to write on file.
+        try:
+            data.write_step
+        except:
+            # Set default value to 5 if not specified by user
+            data.write_step = 5
         if acc % data.write_step == 0:
             io_mp.refresh_file(data)
             # Update the outputs list
