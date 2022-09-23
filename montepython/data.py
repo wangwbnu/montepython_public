@@ -12,7 +12,7 @@ import random as rd
 import warnings
 import subprocess as sp
 import re
-
+import numpy as np
 import io_mp  # Needs to talk to io_mp.py file for the logging
                                # of parameters
 from io_mp import dictitems,dictvalues,dictkeys
@@ -842,7 +842,7 @@ class Data(object):
                         else:
                             continue
                     print(self.version)
-
+                
         # For all elements in the cosmological parameters from the mcmc list,
         # translate any-one that is not directly a CLASS parameter into one.
         # The try: except: syntax ensures that the first call
@@ -1034,6 +1034,47 @@ class Data(object):
             elif elem == 'w0wa':
                 self.cosmo_arguments['wa_fld'] = self.cosmo_arguments[elem] - self.cosmo_arguments['w0_fld']
                 del self.cosmo_arguments[elem]
+
+            # flexknot input, an extra sort is required before passing to CLASS, the redshift z must be ascending order
+            elif elem == 'reio_flexknot_z__1':
+                original_name = 'reio_flexknot_z'
+                # Recover the values of all the other elements
+                values_z = [self.cosmo_arguments['reio_flexknot_z__1']]
+                for other_elem in self.get_mcmc_parameters(['cosmo']):
+                    match = re.search(r'%s__([2-9])' % original_name,
+                                      other_elem)
+                    if match:
+                        values_z.append(self.cosmo_arguments[other_elem])
+
+                # recover the corresponding xe value after the sort of 
+                original_name = 'reio_flexknot_xe'
+                # Recover the values of all the other elements
+                values_xe = [self.cosmo_arguments['reio_flexknot_xe__1']]
+                for other_elem in self.get_mcmc_parameters(['cosmo']):
+                    match = re.search(r'%s__([2-9])' % original_name,
+                                      other_elem)
+                    if match:
+                        values_xe.append(self.cosmo_arguments[other_elem])               
+                
+                # create the cosmo_argument 'reio_flexknot_xe' after sorted(values_z)
+                self.cosmo_arguments['reio_flexknot_xe'] = ', '.join(
+                    ['%g' % value for value in [j for _,j in sorted(zip(values_z,values_xe))]])
+                # Delete the now obsolete entries of the dictionary
+                for index in range(1, len(values_xe)+1):
+                    del self.cosmo_arguments[
+                        'reio_flexknot_xe' + '__%i' % index]
+
+                # create the cosmo_argument 'reio_flexknot_z' after sorted(values_z)
+                self.cosmo_arguments['reio_flexknot_z'] = ', '.join(
+                    ['%g' % value for value in sorted(values_z)])
+                # Delete the now obsolete entries of the dictionary
+                for index in range(1, len(values_z)+1):
+                    del self.cosmo_arguments[
+                        'reio_flexknot_z' + '__%i' % index]
+
+            # flexknot input, prevent reio_flexknot_xe__1 to enter last branch for parameters ending with __i
+            elif elem == 'reio_flexknot_xe__1':
+                continue
 
             # Finally, deal with all the parameters ending with __i, where i is
             # an integer. Replace them all with their name without the trailing
